@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitLab Merge Request Code Reviewer</title>
     <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="Clippy/build/clippy.css">
 </head>
 <body>
     <div class="container">
         <header>
             <div class="header-controls">
+                <div class="agent-button" onclick="toggleGenie()" title="Toggle Genie Assistant">🧞‍♂️</div>
                 <div class="settings-icon" onclick="toggleSettings()">⚙️</div>
                 <div class="opacity-control">
                     <label for="opacity-slider">UI Opacity:</label>
@@ -85,6 +88,8 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="Clippy/build/clippy.min.js"></script>
+    <script src="genie-agent.js"></script>
 
     <script>
         // Opacity control functions
@@ -159,6 +164,15 @@
         function toggleSettings() {
             const panel = document.getElementById('settings-panel');
             panel.classList.toggle('open');
+        }
+
+        // Genie agent toggle function
+        function toggleGenie() {
+            if (window.genieAgent) {
+                window.genieAgent.toggle();
+            } else {
+                console.error('Genie agent not loaded');
+            }
         }
 
         // Cookie functions

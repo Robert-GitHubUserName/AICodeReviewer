@@ -65,6 +65,28 @@ header {
     transform: rotate(90deg);
 }
 
+.agent-button {
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    background: rgba(255, 102, 0, 0.3);
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.agent-button:hover {
+    background: rgba(255, 102, 0, 0.5);
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+}
+
+/* Ensure Genie appears above everything */
+.clippy, .clippy-balloon {
+    z-index: 10000 !important;
+    position: fixed !important;
+}
+
 .opacity-control {
     display: flex;
     align-items: center;
