@@ -10,6 +10,14 @@
 <body>
     <div class="container">
         <header>
+            <div class="header-controls">
+                <div class="settings-icon" onclick="toggleSettings()">⚙️</div>
+                <div class="opacity-control">
+                    <label for="opacity-slider">UI Opacity:</label>
+                    <input type="range" id="opacity-slider" min="0.1" max="1" step="0.1" value="0.5" oninput="adjustOpacity(this.value)">
+                    <span id="opacity-value">50%</span>
+                </div>
+            </div>
             <h1>GitLab Merge Request Code Reviewer</h1>
             <p>AI-powered code review for GitLab merge requests</p>
         </header>
@@ -21,28 +29,39 @@
             </div>
 
             <div class="input-group">
-                <label for="gitlab-token">GitLab Personal Access Token:</label>
-                <input type="password" id="gitlab-token" placeholder="Enter your GitLab personal access token" required>
-                <small style="color: #666; font-size: 12px;">Required for accessing GitLab API. Get from User Settings > Access Tokens</small>
-            </div>
-
-            <div class="input-group">
-                <label for="api-endpoint">OpenAI API Endpoint:</label>
-                <input type="url" id="api-endpoint" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
-            </div>
-
-            <div class="input-group">
-                <label for="openai-key">OpenAI API Key:</label>
-                <input type="password" id="openai-key" placeholder="Enter your OpenAI API key" required>
-            </div>
-
-            <div class="input-group">
                 <label for="custom-instructions">Custom Review Instructions (Optional):</label>
                 <input type="file" id="custom-instructions" accept=".md,.txt" onchange="loadCustomInstructions(event)">
                 <small style="color: #666; font-size: 12px;">Upload a markdown or text file with company-specific code review guidelines</small>
             </div>
 
             <button id="review-btn" onclick="startReview()">Start Code Review</button>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settings-panel">
+            <div class="settings-header">
+                <h3>Settings</h3>
+                <span class="close-settings" onclick="toggleSettings()">×</span>
+            </div>
+            <div class="settings-content">
+                <div class="input-group">
+                    <label for="gitlab-token">GitLab Personal Access Token:</label>
+                    <input type="password" id="gitlab-token" placeholder="Enter your GitLab personal access token" required>
+                    <small>Required for accessing GitLab API. Get from User Settings > Access Tokens</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="api-endpoint">OpenAI API Endpoint:</label>
+                    <input type="url" id="api-endpoint" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
+                </div>
+
+                <div class="input-group">
+                    <label for="openai-key">OpenAI API Key:</label>
+                    <input type="password" id="openai-key" placeholder="Enter your OpenAI API key" required>
+                </div>
+
+                <button class="save-settings-btn" onclick="saveSettings()">Save Settings</button>
+            </div>
         </div>
 
         <div class="error-message" id="error-message" style="display: none;">
@@ -68,6 +87,140 @@
     <script src="script.js"></script>
 
     <script>
+        // Opacity control functions
+        function adjustOpacity(value) {
+            const container = document.querySelector('.container');
+            const header = document.querySelector('header');
+            const inputSection = document.querySelector('.input-section');
+            const inputs = document.querySelectorAll('.input-section input[type="url"], .input-section input[type="password"], .input-section input[type="file"]');
+            const labels = document.querySelectorAll('.input-section label, header label');
+            const headerText = document.querySelectorAll('header h1, header p');
+            const smallText = document.querySelectorAll('.input-section small');
+            const button = document.querySelector('#review-btn');
+            
+            // Update opacity value display
+            document.getElementById('opacity-value').textContent = Math.round(value * 100) + '%';
+            
+            // Calculate background opacity - at 100% slider, background should be fully white
+            const bgOpacity = value;
+            
+            // New font brightness rule:
+            // Keep font dark (like at 100%) until 30%
+            // At 20% and below, switch to light font
+            let fontColor;
+            if (value >= 0.3) {
+                // Dark font for 30% and above
+                fontColor = 'rgb(51, 51, 51)'; // #333
+            } else if (value >= 0.2) {
+                // Transition zone between 20% and 30%
+                const transitionProgress = (value - 0.2) / 0.1; // 0 to 1
+                const brightness = Math.round(51 + (204 * (1 - transitionProgress))); // 51 to 255
+                fontColor = `rgb(${brightness}, ${brightness}, ${brightness})`;
+            } else {
+                // Light font for 20% and below
+                fontColor = 'rgb(255, 255, 255)'; // White
+            }
+            
+            // Apply opacity to main elements
+            container.style.background = `rgba(255, 255, 255, ${bgOpacity})`;
+            header.style.background = `rgba(255, 255, 255, ${bgOpacity * 0.9})`;
+            inputSection.style.background = `rgba(255, 255, 255, ${bgOpacity * 0.8})`;
+            
+            // Settings panel maintains its own fixed opacity (not affected by slider)
+            // This is handled by CSS and doesn't need dynamic updates
+            
+            // Apply font color changes
+            labels.forEach(label => {
+                label.style.color = fontColor;
+            });
+            
+            headerText.forEach(text => {
+                text.style.color = fontColor;
+            });
+            
+            smallText.forEach(small => {
+                small.style.color = fontColor;
+            });
+            
+            if (button) {
+                // Keep button text dark always because button has white background
+                button.style.color = 'rgb(51, 51, 51)'; // Always dark
+            }
+            
+            inputs.forEach(input => {
+                input.style.background = `rgba(255, 255, 255, ${bgOpacity * 0.7})`;
+                input.style.color = fontColor;
+                // Also update placeholder text color
+                input.style.setProperty('--placeholder-color', fontColor);
+            });
+        }
+
+        // Settings toggle function
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            panel.classList.toggle('open');
+        }
+
+        // Cookie functions
+        function setCookie(name, value, days = 30) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+            }
+            return null;
+        }
+
+        // Save settings to cookies
+        function saveSettings() {
+            const gitlabToken = document.getElementById('gitlab-token').value;
+            const apiEndpoint = document.getElementById('api-endpoint').value;
+            const openaiKey = document.getElementById('openai-key').value;
+            const opacityValue = document.getElementById('opacity-slider').value;
+
+            setCookie('gitlab-token', gitlabToken);
+            setCookie('api-endpoint', apiEndpoint);
+            setCookie('openai-key', openaiKey);
+            setCookie('ui-opacity', opacityValue);
+
+            alert('Settings saved successfully!');
+            toggleSettings();
+        }
+
+        // Load settings from cookies
+        function loadSettings() {
+            const gitlabToken = getCookie('gitlab-token');
+            const apiEndpoint = getCookie('api-endpoint');
+            const openaiKey = getCookie('openai-key');
+            const opacityValue = getCookie('ui-opacity');
+
+            if (gitlabToken) document.getElementById('gitlab-token').value = gitlabToken;
+            if (apiEndpoint) document.getElementById('api-endpoint').value = apiEndpoint;
+            if (openaiKey) document.getElementById('openai-key').value = openaiKey;
+            if (opacityValue) {
+                document.getElementById('opacity-slider').value = opacityValue;
+                adjustOpacity(opacityValue);
+            }
+        }
+
+        // Initialize opacity and load settings on page load
+        function initializeOpacity() {
+            loadSettings(); // Load settings from cookies first
+            const slider = document.getElementById('opacity-slider');
+            adjustOpacity(slider.value);
+        }
+
+        // Call initialization when page loads
+        window.addEventListener('load', initializeOpacity);
+
         // Global variables for p5.js wave animation
         let canvasWidth;
         let canvasHeight;

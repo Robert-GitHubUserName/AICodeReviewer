@@ -21,7 +21,7 @@ body {
 .container {
     max-width: 900px;
     margin: 0 auto;
-    background: rgba(255, 255, 255, 0.95);
+    background: transparent; /* Will be set by JavaScript */
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 12px;
@@ -34,13 +34,132 @@ body {
 }
 
 header {
-    background: rgba(255, 255, 255, 0.9);
+    background: transparent; /* Will be set by JavaScript */
     color: #333;
     padding: 40px 30px;
     text-align: center;
     border-bottom: 3px solid #ff6600;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    position: relative;
+}
+
+.header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.settings-icon {
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.settings-icon:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: rotate(90deg);
+}
+
+.opacity-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.opacity-control label {
+    margin: 0;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+#opacity-slider {
+    width: 100px;
+    height: 4px;
+    border-radius: 2px;
+    background: #ddd;
+    outline: none;
+}
+
+#opacity-value {
+    font-weight: 600;
+    min-width: 35px;
+    text-align: center;
+}
+
+/* Settings Panel Styles */
+.settings-panel {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.settings-panel.open {
+    right: 0;
+}
+
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+    background: rgba(255, 102, 0, 0.1);
+}
+
+.settings-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.close-settings {
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    line-height: 1;
+}
+
+.close-settings:hover {
+    color: #ff6600;
+}
+
+.settings-content {
+    padding: 20px;
+}
+
+.save-settings-btn {
+    width: 100%;
+    background: #ff6600;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+.save-settings-btn:hover {
+    background: #e55a00;
 }
 
 header h1 {
@@ -58,7 +177,7 @@ header p {
 
 .input-section {
     padding: 40px 30px;
-    background: rgba(255, 255, 255, 0.8);
+    background: transparent; /* Will be set by JavaScript */
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
 }
@@ -83,9 +202,16 @@ input[type="file"] {
     border-radius: 6px;
     font-size: 16px;
     transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.9);
+    background: transparent; /* Will be set by JavaScript */
+    color: inherit; /* Will be set by JavaScript */
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
+}
+
+input[type="url"]::placeholder,
+input[type="password"]::placeholder,
+input[type="file"]::placeholder {
+    color: rgba(200, 200, 200, 0.8);
 }
 
 input[type="url"]:focus,
