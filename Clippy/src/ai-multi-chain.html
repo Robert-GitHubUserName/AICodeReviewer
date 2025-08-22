@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Chain Processing</title>
+  <link rel="stylesheet" href="../build/clippy.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .navbar-custom {
+      background-color: rgba(0, 0, 0, 0.8); /* Dark background with opacity */
+      border-radius: 2rem; /* Increase rounded corners */
+    }
+    .ai-step {
+      background-color: #343a40;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      color: #f8f9fa;
+    }
+    .ai-step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .ai-step-title {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #17a2b8;
+    }
+    .collapse-toggle {
+      cursor: pointer;
+      color: #f8f9fa;
+    }
+    .instructions-box {
+      margin-bottom: 10px;
+      background-color: #495057;
+      color: #f8f9fa;
+      border-color: #6c757d;
+    }
+    #busyIndicator {
+      color: #17a2b8;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .form-control {
+      background-color: #495057;
+      color: #f8f9fa;
+      border-color: #6c757d;
+    }
+    .form-control:focus {
+      background-color: #495057;
+      color: #f8f9fa;
+    }
+    .output-box {
+      background-color: #495057 !important;
+      color: #f8f9fa !important;
+      border-color: #6c757d;
+    }
+    .form-group label {
+      color: #f8f9fa;
+    }
+    .container {
+      max-width: 1200px;
+    }
+    .ai-response-label {
+      font-weight: bold;
+      color: #17a2b8;
+    }
+    .instruction-display {
+      font-style: italic;
+      color: #adb5bd;
+      margin-bottom: 8px;
+    }
+    .step-highlight {
+      background-color: #2a2e32;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      border-left: 3px solid #17a2b8;
+    }
+    .settings-form {
+      position: absolute;
+      top: 100px;
+      right: 20px;
+      background-color: #343a40;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      color: #f8f9fa;
+      z-index: 1000;
+      width: 350px;
+    }
+    .settings-form h4 {
+      color: #17a2b8;
+      margin-bottom: 15px;
+    }
+    .settings-form label {
+      margin-top: 10px;
+      display: block;
+    }
+    .settings-form .btn {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="content-wrapper">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom rounded">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="../index.html"><i class="fas fa-home"></i> Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="ai-multi-reply.html">Multi-AI Reply</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="ai-multi-conversation.html">Multi-AI Conversation</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="ai-multi-no-agent-conv.html"><i class="fas fa-flask"></i> AI Only Conversation</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="ai-multi-chain.html"><i class="fas fa-link"></i> AI Chain Processing</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="toggleSettingsForm()"><i class="fas fa-cog"></i> Settings</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h1>AI Chain Processing</h1>
+      <p class="lead">Pass responses through a chain of 7 AI models, each refining the previous response.</p>
+      
+      <!-- Settings form -->
+      <div id="settingsForm" class="settings-form" style="display: none;">
+        <h4>Settings</h4>
+        <div class="form-group">
+          <label for="exportStep">Step to Export:</label>
+          <select id="exportStep" class="form-control">
+            <option value="all" selected>All Steps</option>
+            <option value="1">AI #1 - Initial Processing</option>
+            <option value="2">AI #2 - Refinement</option>
+            <option value="3">AI #3 - Analysis</option>
+            <option value="4">AI #4 - Enhancement</option>
+            <option value="5">AI #5 - Expert Review</option>
+            <option value="6">AI #6 - Detail Preservation & Enrichment</option>
+            <option value="7">AI #7 - Final Output</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="settingFileName">Setting File Name:</label>
+          <input type="text" id="settingFileName" class="form-control" placeholder="Enter filename (without extension)">
+        </div>
+        <div class="btn-group w-100">
+          <button class="btn btn-info" onclick="exportSettings()">Export Settings</button>
+          <button class="btn btn-warning" onclick="importSettings()">Import Settings</button>
+          <input type="file" id="importFile" style="display: none;" onchange="handleFileImport()" accept=".json">
+        </div>
+        <button class="btn btn-secondary w-100 mt-2" onclick="toggleSettingsForm()">Close</button>
+      </div>
+      
+      <div class="controls">
+        <label for="apiKeyInput">OpenRouter API Key:</label>
+        <input type="text" id="apiKeyInput" class="form-control" placeholder="Enter API Key">
+        <label for="topicInput">Initial Prompt:</label>
+        <input type="text" id="topicInput" class="form-control" placeholder="Enter your initial prompt">
+        <button id="startChainButton" class="btn btn-primary mt-3">Start Chain Processing</button>
+      </div>
+      
+      <div id="busyIndicator" style="display: none;">
+        <i class="fas fa-spinner fa-spin"></i> Processing chain...
+      </div>
+
+      <!-- AI Steps Container -->
+      <div id="aiStepsContainer" class="mt-4">
+        <!-- AI Step 1 -->
+        <div class="ai-step" id="aiStep1">
+          <div class="ai-step-header">
+            <h3 class="ai-step-title">AI #1 - Initial Processing</h3>
+            <span class="collapse-toggle" data-toggle="collapse" data-target="#aiStep1Content">
+              <i class="fas fa-chevron-down"></i>
+            </span>
+          </div>
+          <div class="collapse show" id="aiStep1Content">
+            <div class="form-group">
+              <div class="d-flex justify-content-between align-items-center">
+                <label for="engineSelect1">Select AI Engine:</label>
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input skip-checkbox" id="skipStep1">
+                  <label class="custom-control-label" for="skipStep1">Skip this AI</label>
+                </div>
+              </div>
+              <select id="engineSelect1" class="form-control engineSelect"></select>
+            </div>
+            <div class="form-group">
+              <label for="instructions1">Instructions:</label>
+              <textarea id="instructions1" class="form-control instructions-box" rows="3">You are the first AI in a chain of processors. Analyze the initial prompt thoroughly and provide a CONCISE yet COMPREHENSIVE response. Focus on key concepts and include SPECIFIC FACTS and DETAILS. Keep your response focused and information-dense. Limit to 400 words maximum while preserving all important information.</textarea>
+            </div>
+            <div class="form-group">
+              <label>Output:</label>
+              <textarea id="outputBox1" class="form-control output-box" rows="5" readonly></textarea>
+            </div>
+            <button onclick="copyToClipboard('outputBox1')" class="btn btn-secondary btn-sm">Copy</button>
+          </div>
+        </div>
+
+        <!-- AI Step 2 -->
+        <div class="ai-step" id="aiStep2">
+          <div class="ai-step-header">
+            <h3 class="ai-step-title">AI #2 - Refinement</h3>
+            <span class="collapse-toggle" data-toggle="collapse" data-target="#aiStep2Content">
+              <i class="fas fa-chevron-down"></i>
+            </span>
+          </div>
+          <div class="collapse show" id="aiStep2Content">
+            <div class="form-group">
+              <div class="d-flex justify-content-between align-items-center">
+                <label for="engineSelect2">Select AI Engine:</label>
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input skip-checkbox" id="skipStep2">
+                  <label class="custom-control-label" for="skipStep2">Skip this AI</label>
+                </div>
+              </div>
+              <select id="engineSelect2" class="form-control engineSelect"></select>
+            </div>
+            <div class="form-group">
+              <label for="instructions2">Instructions:</label>
+              <textarea id="instructions2" class="form-control instructions-box" rows="3">You are the second AI in the chain. Review and improve the previous AI's response with a focus on ACCURACY and CLARITY. Correct any errors and add important missing information. Be CONCISE - aim for 400 words or less. Include SPECIFIC FACTS and NUMERICAL DATA where appropriate. Preserve all key details from the original response.</textarea>
+            </div>
+            <div class="form-group">
+              <label>Output:</label>
+              <textarea id="outputBox2" class="form-control output-box" rows="5" readonly></textarea>
+            </div>
+            <button onclick="copyToClipboard('outputBox2')" class="btn btn-secondary btn-sm">Copy</button>
+          </div>
+        </div>
+
+        <!-- AI Step 3 -->
+        <div class="ai-step" id="aiStep3">
+          <div class="ai-step-header">
+            <h3 class="ai-step-title">AI #3 - Analysis</h3>
+            <span class="collapse-toggle" data-toggle="collapse" data-target="#aiStep3Content">
+              <i class="fas fa-chevron-down"></i>
+            </span>
+          </div>
+          <div class="collapse show" id="aiStep3Content">
+            <div class="form-group">
+              <div class="d-flex justify-content-between align-items-center">
+                <label for="engineSelect3">Select AI Engine:</label>
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input skip-checkbox" id="skipStep3">
+                  <label class="custom-control-label" for="skipStep3">Skip this AI</label>
+                </div>
+              </div>
+              <select id="engineSelect3" class="form-control engineSelect"></select>
+            </div>
+            <div class="form-group">
+              <label for="instructions3">Instructions:</label>
+              <textarea id="instructions3" class="form-control instructions-box" rows="3">You are the third AI in the chain. CRITICALLY ANALYZE the previous response. Identify gaps in reasoning and address them with SPECIFIC FACTS. Maintain BREVITY - keep under 400 words. Highlight CONNECTIONS between concepts. Format key points with bullets or numbering for clarity. Preserve all valuable details already provided.</textarea>
+            </div>
+            <div class="form-group">
+              <label>Output:</label>
+              <textarea id="outputBox3" class="form-control output-box" rows="5" readonly></textarea>
+            </div>
+            <button onclick="copyToClipboard('outputBox3')" class="btn btn-secondary btn-sm">Copy</button>
+          </div>
+        </div>
+
+        <!-- AI Step 4 -->
+        <div class="ai-step" id="aiStep4">
+          <div class="ai-step-header">
+            <h3 class="ai-step-title">AI #4 - Enhancement</h3>
+            <span class="collapse-toggle" data-toggle="collapse" data-target="#aiStep4Content">
+              <i class="fas fa-chevron-down"></i>
+            </span>
+          </div>
+          <div class="collapse show" id="aiStep4Content">
+            <div class="form-group">
+              <div class="d-flex justify-content-between align-items-center">
+                <label for="engineSelect4">Select AI Engine:</label>
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input skip-checkbox" id="skipStep4">
+                  <label class="custom-control-label" for="skipStep4">Skip this AI</label>
+                </div>
+              </div>
+              <select id="engineSelect4" class="form-control engineSelect"></select>
+            </div>
+            <div class="form-group">
+              <label for="instructions4">Instructions:</label>
+              <textarea id="instructions4" class="form-control instructions-box" rows="3">You are the fourth AI in the chain. ENHANCE the previous response with CONCRETE EXAMPLES and PRACTICAL APPLICATIONS. Use CONCISE language - stay under 400 words. Focus on making abstract concepts TANGIBLE through specific real-world examples. Use formatting (bold, numbering) to highlight the most IMPORTANT DETAILS.</textarea>
+            </div>
+            <div class="form-group">
+              <label>Output:</label>
+              <textarea id="outputBox4" class="form-control output-box" rows="5" readonly></textarea>
+            </div>
+            <button onclick="copyToClipboard('outputBox4')" class="btn btn-secondary btn-sm">Copy</button>
+          </div>
+        </div>
+
+        <!-- AI Step 5 -->
+        <div class="ai-step" id="aiStep5">
+          <div class="ai-step-header">
+            <h3 class="ai-step-title">AI #5 - Expert Review</h3>
+            <span class="collapse-toggle" data-toggle="collapse" data-target="#aiStep5Content">
+              <i class="fas fa-chevron-down"></i>
+            </span>
+          </div>
+          <div class="collapse show" id="aiStep5Content">
+            <div class="form-group">
+              <div class="d-flex justify-content-between align-items-center">
+                <label for="engineSelect5">Select AI Engine:</label>
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input skip-checkbox" id="skipStep5">
+                  <label class="custom-control-label" for="skipStep5">Skip this AI</label>
+                </div>
+              </div>
+              <select id="engineSelect5" class="form-control engineSelect"></select>
+            </div>
+            <div class="form-group">
+              <label for="instructions5">Instructions:</label>
+              <textarea id="instructions5" class="form-control instructions-box" rows="3">You are the fifth AI in the chain. As an EXPERT in the subject area, REVIEW the previous response. Add DOMAIN-SPECIFIC KNOWLEDGE and correct any misconceptions. Maintain BREVITY (under 400 words). Use precise TECHNICAL TERMINOLOGY where appropriate, but explain any complex terms. Preserve all valuable FACTS and INSIGHTS already presented.</textarea>
+            </div>
+            <div class="form-group">
+              <label>Output:</label>
+              <textarea id="outputBox5" class="form-control output-box" rows="5" readonly></textarea>
+            </div>
+            <button onclick="copyToClipboard('outputBox5')" class="btn btn-secondary btn-sm">Copy</button>
+          </div>
+        </div>
+
+        <!-- AI Step 6 -->
+        <div class="ai-step" id="aiStep6">
+          <div class="ai-step-header">
+            <h3 class="ai-step-title">AI #6 - Detail Preservation & Enrichment</h3>
+            <span class="collapse-toggle" data-toggle="collapse" data-target="#aiStep6Content">
+              <i class="fas fa-chevron-down"></i>
+            </span>
+          </div>
+          <div class="collapse show" id="aiStep6Content">
+            <div class="form-group">
+              <div class="d-flex justify-content-between align-items-center">
+                <label for="engineSelect6">Select AI Engine:</label>
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input skip-checkbox" id="skipStep6">
+                  <label class="custom-control-label" for="skipStep6">Skip this AI</label>
+                </div>
+              </div>
+              <select id="engineSelect6" class="form-control engineSelect"></select>
+            </div>
+            <div class="form-group">
+              <label for="instructions6">Instructions:</label>
+              <textarea id="instructions6" class="form-control instructions-box" rows="3">You are the sixth AI in the chain. PRESERVE and ENHANCE the most valuable details from the previous response. Focus on UNIQUE INSIGHTS and SPECIFIC FACTS that might be overlooked. Maintain BREVITY (under 400 words). Create a cohesive narrative that integrates all key information. Use clear section headings if appropriate to improve organization.</textarea>
+            </div>
+            <div class="form-group">
+              <label>Output:</label>
+              <textarea id="outputBox6" class="form-control output-box" rows="5" readonly></textarea>
+            </div>
+            <button onclick="copyToClipboard('outputBox6')" class="btn btn-secondary btn-sm">Copy</button>
+          </div>
+        </div>
+
+        <!-- AI Step 7 -->
+        <div class="ai-step" id="aiStep7">
+          <div class="ai-step-header">
+            <h3 class="ai-step-title">AI #7 - Final Output</h3>
+            <span class="collapse-toggle" data-toggle="collapse" data-target="#aiStep7Content">
+              <i class="fas fa-chevron-down"></i>
+            </span>
+          </div>
+          <div class="collapse show" id="aiStep7Content">
+            <div class="form-group">
+              <div class="d-flex justify-content-between align-items-center">
+                <label for="engineSelect7">Select AI Engine:</label>
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input skip-checkbox" id="skipStep7">
+                  <label class="custom-control-label" for="skipStep7">Skip this AI</label>
+                </div>
+              </div>
+              <select id="engineSelect7" class="form-control engineSelect"></select>
+            </div>
+            <div class="form-group">
+              <label for="instructions7">Instructions:</label>
+              <textarea id="instructions7" class="form-control instructions-box" rows="3">You are the final AI in the chain. SYNTHESIZE all the most valuable information from previous responses into a COHESIVE, COMPREHENSIVE answer. Keep your response UNDER 500 WORDS but ensure it includes ALL KEY FACTS, DETAILS, and INSIGHTS. Format the information with clear structure using headings or lists where appropriate. Your goal is to create the definitive response to the original prompt.</textarea>
+            </div>
+            <div class="form-group">
+              <label>Output:</label>
+              <textarea id="outputBox7" class="form-control output-box" rows="5" readonly></textarea>
+            </div>
+            <button onclick="copyToClipboard('outputBox7')" class="btn btn-secondary btn-sm">Copy</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-4 mb-5">
+        <div class="form-group">
+          <label for="finalOutputBox"><strong>Complete Chain Output:</strong></label>
+          <textarea id="finalOutputBox" class="form-control output-box" rows="10" readonly></textarea>
+        </div>
+        <button onclick="copyToClipboard('finalOutputBox')" class="btn btn-primary">Copy Complete Output</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Fetch models and populate the engine select dropdowns
+    function fetchModelsAndPopulateSelect(selectElement) {
+      const apiKey = getCookie('apiKey') || document.getElementById('apiKeyInput').value || 'YOUR_OPENROUTER_API_KEY';
+      fetch('https://openrouter.ai/api/v1/models', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        selectElement.innerHTML = '';
+        const freeModels = data.data.filter(model => model.name.includes("(free)"));
+        const paidModels = data.data.filter(model => !model.name.includes("(free)"));
+        const sortedModels = [...freeModels, ...paidModels];
+        sortedModels.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model.id;
+          option.text = model.name;
+          selectElement.appendChild(option);
+        });
+      })
+      .catch(error => {
+        console.error("Error fetching models from OpenRouter:", error);
+        alert("Error fetching models: " + error.message);
+      });
+    }
+
+    // Initialize all engine select dropdowns
+    document.addEventListener('DOMContentLoaded', () => {
+      // Populate all AI engine dropdowns
+      for (let i = 1; i <= 7; i++) {
+        fetchModelsAndPopulateSelect(document.getElementById(`engineSelect${i}`));
+      }
+
+      // Load API key from cookie if available
+      const apiKeyInput = document.getElementById('apiKeyInput');
+      const savedApiKey = getCookie('apiKey');
+      if (savedApiKey) {
+        apiKeyInput.value = savedApiKey;
+      }
+      
+      // Set up collapsible sections
+      document.querySelectorAll('.collapse-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+          const target = this.getAttribute('data-target');
+          const icon = this.querySelector('i');
+          if ($(target).hasClass('show')) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+          } else {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+          }
+        });
+      });
+    });
+
+    // Toggle settings form visibility
+    function toggleSettingsForm() {
+      const settingsForm = document.getElementById('settingsForm');
+      if (settingsForm.style.display === 'none') {
+        settingsForm.style.display = 'block';
+      } else {
+        settingsForm.style.display = 'none';
+      }
+    }
+
+    // Export settings for a specific AI step or all steps
+    function exportSettings() {
+      const stepNumber = document.getElementById('exportStep').value;
+      const fileName = document.getElementById('settingFileName').value || (stepNumber === 'all' ? 'ai-chain-all-settings' : `ai-chain-step-${stepNumber}-settings`);
+      
+      // Export all AI steps
+      if (stepNumber === 'all') {
+        const allSettings = {
+          exportType: 'all',
+          steps: [],
+          exportDate: new Date().toISOString()
+        };
+        
+        // Gather settings for all steps
+        for (let i = 1; i <= 7; i++) {
+          const engineSelect = document.getElementById(`engineSelect${i}`);
+          const instructions = document.getElementById(`instructions${i}`).value;
+          const stepTitle = document.querySelector(`#aiStep${i} .ai-step-title`).textContent;
+          
+          allSettings.steps.push({
+            stepNumber: i,
+            stepTitle: stepTitle,
+            engineId: engineSelect.value,
+            engineName: engineSelect.options[engineSelect.selectedIndex].text,
+            instructions: instructions,
+            skipEnabled: document.getElementById(`skipStep${i}`).checked
+          });
+        }
+        
+        // Convert to JSON and create download link
+        const jsonData = JSON.stringify(allSettings, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create download link and trigger click
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = `${fileName}.json`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        alert(`All AI chain settings exported successfully!`);
+        return;
+      }
+      
+      // Export single step
+      const engineSelect = document.getElementById(`engineSelect${stepNumber}`);
+      const instructions = document.getElementById(`instructions${stepNumber}`).value;
+      
+      // Create settings object for single step
+      const settings = {
+        exportType: 'single',
+        stepNumber: stepNumber,
+        stepTitle: document.querySelector(`#aiStep${stepNumber} .ai-step-title`).textContent,
+        engineId: engineSelect.value,
+        engineName: engineSelect.options[engineSelect.selectedIndex].text,
+        instructions: instructions,
+        skipEnabled: document.getElementById(`skipStep${stepNumber}`).checked,
+        exportDate: new Date().toISOString()
+      };
+      
+      // Convert to JSON and create download link
+      const jsonData = JSON.stringify(settings, null, 2);
+      const blob = new Blob([jsonData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      // Create download link and trigger click
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = `${fileName}.json`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      
+      alert(`Settings for ${settings.stepTitle} exported successfully!`);
+    }
+
+    // Trigger file input when import button is clicked
+    function importSettings() {
+      document.getElementById('importFile').click();
+    }
+
+    // Handle file import
+    function handleFileImport() {
+      const fileInput = document.getElementById('importFile');
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const settings = JSON.parse(e.target.result);
+          
+          // Check if this is an "all steps" settings file
+          if (settings.exportType === 'all' && Array.isArray(settings.steps)) {
+            // Import settings for all steps
+            settings.steps.forEach(stepSetting => {
+              const stepNumber = stepSetting.stepNumber;
+              
+              // Skip any invalid step numbers
+              if (stepNumber < 1 || stepNumber > 7) return;
+              
+              // Apply instructions
+              document.getElementById(`instructions${stepNumber}`).value = stepSetting.instructions;
+              
+              // Set skip checkbox state
+              if (typeof stepSetting.skipEnabled === 'boolean') {
+                document.getElementById(`skipStep${stepNumber}`).checked = stepSetting.skipEnabled;
+              }
+              
+              // Set engine selection if it exists in the dropdown
+              const engineSelect = document.getElementById(`engineSelect${stepNumber}`);
+              for (let i = 0; i < engineSelect.options.length; i++) {
+                if (engineSelect.options[i].value === stepSetting.engineId) {
+                  engineSelect.selectedIndex = i;
+                  break;
+                }
+              }
+            });
+            
+            alert('All AI chain settings imported successfully!');
+            return;
+          }
+          
+          // Handle single step import (legacy format or single export)
+          const stepNumber = settings.stepNumber;
+          
+          // Validate that we have a valid step number
+          if (!stepNumber || stepNumber < 1 || stepNumber > 7) {
+            throw new Error("Invalid step number in settings file");
+          }
+          
+          // Apply settings
+          document.getElementById(`instructions${stepNumber}`).value = settings.instructions;
+          
+          // Set skip checkbox state if available
+          if (typeof settings.skipEnabled === 'boolean') {
+            document.getElementById(`skipStep${stepNumber}`).checked = settings.skipEnabled;
+          }
+          
+          // Set engine selection if it exists in the dropdown
+          const engineSelect = document.getElementById(`engineSelect${stepNumber}`);
+          for (let i = 0; i < engineSelect.options.length; i++) {
+            if (engineSelect.options[i].value === settings.engineId) {
+              engineSelect.selectedIndex = i;
+              break;
+            }
+          }
+          
+          alert(`Settings for ${settings.stepTitle} imported successfully!`);
+        } catch (error) {
+          alert("Error importing settings: " + error.message);
+          console.error(error);
+        }
+      };
+      
+      reader.readAsText(file);
+      // Reset file input so the same file can be selected again
+      fileInput.value = '';
+    }
+
+    // Process the complete chain when the button is clicked
+    document.getElementById('startChainButton').addEventListener('click', async () => {
+      const initialPrompt = document.getElementById('topicInput').value;
+      if (!initialPrompt) {
+        alert("Please enter an initial prompt.");
+        return;
+      }
+
+      const apiKey = document.getElementById('apiKeyInput').value;
+      if (!apiKey) {
+        alert("Please enter an API key.");
+        return;
+      }
+      
+      // Store API key in cookie
+      setCookie('apiKey', apiKey, 365);
+
+      // Clear previous outputs
+      for (let i = 1; i <= 7; i++) {
+        document.getElementById(`outputBox${i}`).value = '';
+      }
+      document.getElementById('finalOutputBox').value = '';
+      
+      // Show busy indicator
+      document.getElementById('busyIndicator').style.display = 'block';
+      
+      try {
+        let chainResults = [];
+        let fullHistory = `Original Prompt: ${initialPrompt}\n\n`;
+        
+        // Process each AI in the chain
+        for (let i = 1; i <= 7; i++) {
+          if (document.getElementById(`skipStep${i}`).checked) {
+            chainResults.push(`Skipped AI #${i}`);
+            continue;
+          }
+          highlightCurrentStep(i);
+          const engineId = document.getElementById(`engineSelect${i}`).value;
+          const instructions = document.getElementById(`instructions${i}`).value;
+          
+          // Create optimized context for this AI step
+          let contextForCurrentAI;
+          
+          if (i === 1) {
+            contextForCurrentAI = `Initial Prompt: ${initialPrompt}`;
+          } else {
+            let previousResponses = '';
+            for (let j = 0; j < i - 1; j++) {
+              previousResponses += `[AI #${j + 1} Response]:\n${chainResults[j]}\n\n`;
+            }
+            contextForCurrentAI = `Initial Prompt: ${initialPrompt}\n\nPrevious AI Responses:\n${previousResponses}`;
+          }
+          
+          // Create the final prompt for this AI
+          const prompt = `${instructions}\n\n${contextForCurrentAI}\n\nProvide your response:`;
+          
+          // Get response from OpenRouter
+          const response = await getOpenRouterResponse(apiKey, engineId, prompt);
+          
+          // Store the result
+          chainResults.push(response);
+          
+          // Update the output box for this step
+          const outputBox = document.getElementById(`outputBox${i}`);
+          outputBox.value = response;
+          
+          // Add to the full history record
+          fullHistory += `[AI #${i} Instructions]:\n${instructions}\n\n[AI #${i} Response]:\n${response}\n\n`;
+        }
+        
+        // Update the final output box with the complete result
+        document.getElementById('finalOutputBox').value = fullHistory;
+        
+        // Clear step highlighting
+        for (let i = 1; i <= 7; i++) {
+          document.getElementById(`aiStep${i}`).classList.remove('step-highlight');
+        }
+        
+      } catch (error) {
+        alert("Error during chain processing: " + error.message);
+        console.error(error);
+      } finally {
+        // Hide busy indicator
+        document.getElementById('busyIndicator').style.display = 'none';
+      }
+    });
+    
+    // Function to highlight the current AI step being processed
+    function highlightCurrentStep(stepNumber) {
+      // Remove highlight from all steps
+      for (let i = 1; i <= 7; i++) {
+        document.getElementById(`aiStep${i}`).classList.remove('step-highlight');
+      }
+      
+      // Add highlight to current step
+      document.getElementById(`aiStep${stepNumber}`).classList.add('step-highlight');
+    }
+
+    // Function to get a response from OpenRouter
+    async function getOpenRouterResponse(apiKey, engineId, prompt) {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: engineId,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error.message);
+      }
+      
+      return data.choices[0].message.content.trim();
+    }
+
+    function copyToClipboard(elementId) {
+      const textarea = document.getElementById(elementId);
+      textarea.select();
+      document.execCommand('copy');
+      alert('Copied to clipboard');
+    }
+
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = "expires=" + d.toUTCString();
+      document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+  </script>
+</body>
+</html>

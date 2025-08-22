@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Agent Conversation</title>
+  <link rel="stylesheet" href="../build/clippy.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    .navbar-custom {
+      background-color: rgba(0, 0, 0, 0.8); /* Dark background with opacity */
+      border-radius: 2rem; /* Increase rounded corners */
+    }
+  </style>
+</head>
+<body>
+  <div class="content-wrapper">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom rounded">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="../index.html"><i class="fas fa-home"></i> Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="ai-multi-reply.html">Multi-AI Reply</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="ai-multi-conversation.html">Multi-AI Conversation</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="ai-multi-no-agent-conv.html"><i class="fas fa-flask"></i> AI Only Conversation</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="ai-multi-chain.html"><i class="fas fa-link"></i> AI Chain Processing</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h1>Multi-AI Conversation</h1>
+      <div class="controls">
+        <label for="apiKeyInput">OpenRouter API Key:</label>
+        <input type="text" id="apiKeyInput" class="form-control" placeholder="Enter API Key">
+        <label for="topicInput">Prompt:</label>
+        <input type="text" id="topicInput" class="form-control" placeholder="Enter a topic to discuss">
+        <button id="startConversationButton" class="btn btn-primary">Start Conversation</button>
+      </div>
+      <div id="agentsContainer">
+        <div class="agent">
+          <div class="agent-select-container">
+            <div class="agent-select-row">
+              <label for="agentSelect0">Select Agent:</label>
+              <select id="agentSelect0" class="form-control agentSelect">
+                <option value="Genie">Genie</option>
+                <option value="Merlin">Merlin</option>
+                <option value="Bonzi">Bonzi</option>
+                <option value="Clippy">Clippy</option>
+                <option value="F1">F1</option>
+                <option value="Genius">Genius</option>
+                <option value="Links">Links</option>
+                <option value="Peedy">Peedy</option>
+                <option value="Rocky">Rocky</option>
+                <option value="Rover">Rover</option>
+              </select>
+            </div>
+            <div class="agent-select-row">
+              <label for="engineSelect0">Select Engine:</label>
+              <select id="engineSelect0" class="form-control engineSelect"></select>
+            </div>
+          </div>
+          <label id="errorBox0" class="errorLabel"></label>
+          <textarea id="replyBox0" class="form-control replyBox"></textarea>
+          <div class="button-container">
+            <button onclick="copyToClipboard('replyBox0')" class="btn btn-secondary">Copy</button>
+          </div>
+        </div>
+        <div class="agent">
+          <div class="agent-select-container">
+            <div class="agent-select-row">
+              <label for="agentSelect1">Select Agent:</label>
+              <select id="agentSelect1" class="form-control agentSelect">
+                <option value="Merlin" selected>Merlin</option>
+                <option value="Genie">Genie</option>
+                <option value="Bonzi">Bonzi</option>
+                <option value="Clippy">Clippy</option>
+                <option value="F1">F1</option>
+                <option value="Genius">Genius</option>
+                <option value="Links">Links</option>
+                <option value="Peedy">Peedy</option>
+                <option value="Rocky">Rocky</option>
+                <option value="Rover">Rover</option>
+              </select>
+            </div>
+            <div class="agent-select-row">
+              <label for="engineSelect1">Select Engine:</label>
+              <select id="engineSelect1" class="form-control engineSelect"></select>
+            </div>
+          </div>
+          <label id="errorBox1" class="errorLabel"></label>
+          <textarea id="replyBox1" class="form-control replyBox"></textarea>
+          <div class="button-container">
+            <button onclick="copyToClipboard('replyBox1')" class="btn btn-secondary">Copy</button>
+          </div>
+        </div>
+      </div>
+      <div class="button-container">
+        <button id="addAgentButton" class="btn btn-success">Add Agent</button>
+      </div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  <script src="../build/clippy.min.js"></script>
+  <script>
+    clippy.BASE_PATH = '../agents/';
+    let agents = [];
+    let stopConversation = false; // Variable to control stopping the conversation
+    let agentCount = 2; // Start with two agents
+
+    // Simple queue system
+    class ActionQueue {
+      constructor() {
+        this.queue = [];
+        this.isRunning = false;
+      }
+
+      enqueue(action) {
+        console.log("Enqueuing action");
+        this.queue.push(action);
+        this.runNext();
+      }
+
+      runNext() {
+        if (this.isRunning || this.queue.length === 0) return;
+        this.isRunning = true;
+        const action = this.queue.shift();
+        console.log("Running action");
+        action(() => {
+          this.isRunning = false;
+          this.runNext();
+        });
+      }
+
+      clear() {
+        this.queue = [];
+        this.isRunning = false;
+      }
+    }
+
+    const actionQueue = new ActionQueue();
+
+    // Fetch the list of models from OpenRouter API
+    function fetchModelsAndPopulateSelect(selectElement) {
+      const apiKey = getCookie('apiKey') || document.getElementById('apiKeyInput').value || 'YOUR_OPENROUTER_API_KEY';
+      fetch('https://openrouter.ai/api/v1/models', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}` // Use the provided API key or the default one
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        selectElement.innerHTML = ''; // Clear existing options
+        // Sort models by whether they contain "(free)" in their name, keeping original order for non-free models
+        const freeModels = data.data.filter(model => model.name.includes("(free)"));
+        const paidModels = data.data.filter(model => !model.name.includes("(free)"));
+        const sortedModels = [...freeModels, ...paidModels];
+        sortedModels.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model.id;
+          option.text = model.name;
+          selectElement.appendChild(option);
+        });
+      })
+      .catch(error => {
+        console.error("Error fetching models from OpenRouter:", error);
+        document.getElementById('errorBox0').innerText = `Error fetching models: ${error.message}`;
+      });
+    }
+
+    // Populate the initial engine select
+    fetchModelsAndPopulateSelect(document.getElementById('engineSelect0'));
+    fetchModelsAndPopulateSelect(document.getElementById('engineSelect1'));
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const apiKeyInput = document.getElementById('apiKeyInput');
+      const savedApiKey = getCookie('apiKey');
+      if (savedApiKey) {
+        apiKeyInput.value = savedApiKey;
+      }
+    });
+
+    document.getElementById('addAgentButton').addEventListener('click', () => {
+      if (agentCount >= 10) {
+        alert("Maximum number of agents reached.");
+        return;
+      }
+
+      const agentsContainer = document.getElementById('agentsContainer');
+      const newAgentDiv = document.createElement('div');
+      newAgentDiv.className = 'agent';
+      newAgentDiv.innerHTML = `
+        <div class="agent-select-container">
+          <div class="agent-select-row">
+            <label for="agentSelect${agentCount}">Select Agent:</label>
+            <select id="agentSelect${agentCount}" class="form-control agentSelect">
+              <option value="Merlin">Merlin</option>
+              <option value="Bonzi">Bonzi</option>
+              <option value="Clippy">Clippy</option>
+              <option value="F1">F1</option>
+              <option value="Genie">Genie</option>
+              <option value="Genius">Genius</option>
+              <option value="Links">Links</option>
+              <option value="Peedy">Peedy</option>
+              <option value="Rocky">Rocky</option>
+              <option value="Rover">Rover</option>
+            </select>
+          </div>
+          <div class="agent-select-row">
+            <label for="engineSelect${agentCount}">Select Engine:</label>
+            <select id="engineSelect${agentCount}" class="form-control engineSelect"></select>
+          </div>
+        </div>
+        <label id="errorBox${agentCount}" class="errorLabel"></label>
+        <textarea id="replyBox${agentCount}" class="form-control replyBox"></textarea>
+        <div class="button-container">
+          <button onclick="copyToClipboard('replyBox${agentCount}')" class="btn btn-secondary">Copy</button>
+        </div>
+      `;
+      agentsContainer.appendChild(newAgentDiv);
+
+      // Populate the new engine select with models
+      fetchModelsAndPopulateSelect(document.getElementById(`engineSelect${agentCount}`));
+
+      agentCount++;
+    });
+
+    document.getElementById('startConversationButton').addEventListener('click', () => {
+      stopConversation = false; // Reset the stop flag
+      const topic = document.getElementById('topicInput').value || "AI"; // Default to "AI" if no topic is entered
+      const apiKeyInput = document.getElementById('apiKeyInput').value;
+      const currentApiKey = getCookie('apiKey');
+      if (!currentApiKey || currentApiKey !== apiKeyInput) {
+        setCookie('apiKey', apiKeyInput, 365);
+      }
+
+      const selectedAgents = [];
+      for (let i = 0; i < agentCount; i++) {
+        const agentName = document.getElementById(`agentSelect${i}`).value;
+        const engine = document.getElementById(`engineSelect${i}`).value;
+        const existingAgent = agents.find(agent => agent.name === agentName && agent.engine === engine);
+        if (existingAgent) {
+          selectedAgents.push(existingAgent);
+        } else {
+          const newAgent = { name: agentName, engine: engine, instance: null };
+          agents.push(newAgent);
+          selectedAgents.push(newAgent);
+        }
+      }
+
+      loadAgentsAndStartConversation(topic, selectedAgents);
+    });
+
+    function loadAgentsAndStartConversation(topic, selectedAgents) {
+      let loadedCount = 0;
+
+      selectedAgents.forEach((agent, index) => {
+        if (agent.instance) {
+          loadedCount++;
+          if (loadedCount === selectedAgents.length) {
+            startConversation(topic, selectedAgents);
+          }
+        } else {
+          console.log(`Loading ${agent.name}...`);
+          clippy.load(agent.name, (a) => {
+            agent.instance = a;
+            agent.instance.moveTo(100 + (index * 100), 100);
+            agent.instance.show();
+
+            loadedCount++;
+            if (loadedCount === selectedAgents.length) {
+              startConversation(topic, selectedAgents);
+            }
+          });
+        }
+      });
+    }
+
+    function startConversation(topic, selectedAgents) {
+      if (stopConversation) return; // Exit if stop flag is set
+
+      let conversationCount = 0;
+      let lastResponse = topic; // Initialize with the topic
+
+      function agentReply(agent, index, done) {
+        if (stopConversation) return done(); // Exit if stop flag is set
+        console.log(`${agent.name} asking AI for response`);
+        const prompt = `${lastResponse}`;
+        agent.instance.speak("Let me ask OpenRouter...");
+        const apiKey = getCookie('apiKey') || document.getElementById('apiKeyInput').value || 'YOUR_OPENROUTER_API_KEY';
+        fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}` // Use the provided API key or the default one
+          },
+          body: JSON.stringify({
+            model: agent.engine,
+            messages: [
+              { role: 'user', content: prompt }
+            ],
+          }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            throw new Error(data.error.message);
+          }
+          const aiResponse = data.choices[0].message.content.trim(); // Store the AI response
+          lastResponse = aiResponse; // Update the last response
+          const replyBox = document.getElementById(`replyBox${index}`);
+          replyBox.value += aiResponse + '\n'; // Append the AI response to the reply box
+          replyBox.style.height = 'auto'; // Reset the height to auto
+          replyBox.style.height = replyBox.scrollHeight + 'px'; // Adjust the height based on content
+          agent.instance.speak(aiResponse); // Agent speaks the AI response
+          agent.instance.gestureAt(100, 100);
+          done();
+        })
+        .catch(error => {
+          console.error("Error communicating with OpenRouter:", error);
+          document.getElementById(`errorBox${index}`).innerText = `Error: ${error.message}`;
+          agent.instance.speak("There was an error reaching OpenRouter AI.");
+          done();
+        });
+      }
+
+      function continueConversation() {
+        if (stopConversation) return; // Exit if stop flag is set
+
+        selectedAgents.forEach((agent, index) => {
+          for (let i = 0; i < 2; i++) { // Each agent replies twice
+            actionQueue.enqueue((done) => {
+              agentReply(agent, index, done);
+            });
+
+            // Add a pause
+            actionQueue.enqueue((done) => {
+              setTimeout(done, 2000); // 2 second pause
+            });
+          }
+        });
+
+        // Ask to continue the conversation
+        actionQueue.enqueue((done) => {
+          if (stopConversation) return done(); // Exit if stop flag is set
+          const continueConversation = confirm("Do you want to continue the conversation?");
+          if (continueConversation) {
+            continueConversation(); // Continue the conversation
+          } else {
+            stopConversation = true; // Stop the conversation
+          }
+          done();
+        });
+      }
+
+      continueConversation(); // Start the conversation
+    }
+
+    function copyToClipboard(elementId) {
+      const textarea = document.getElementById(elementId);
+      textarea.select();
+      document.execCommand('copy');
+      alert('Copied to clipboard');
+    }
+
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + (days*24*60*60*1000));
+      const expires = "expires=" + d.toUTCString();
+      document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+  </script>
+</body>
+</html>

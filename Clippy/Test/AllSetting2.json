@@ -1,0 +1,62 @@
+{
+  "exportType": "all",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "stepTitle": "AI #1 - Initial Processing",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "You are the first AI in a chain of processors. Analyze the initial prompt thoroughly and provide a CONCISE yet COMPREHENSIVE response. Focus on key concepts and include SPECIFIC FACTS and DETAILS. Keep your response focused and information-dense. Limit to 400 words maximum while preserving all important information.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 2,
+      "stepTitle": "AI #2 - Refinement",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "You are the second AI in the chain. Review and improve the previous AI's response with a focus on ACCURACY and CLARITY. Correct any errors and add important missing information. Be CONCISE - aim for 400 words or less. Include SPECIFIC FACTS and NUMERICAL DATA where appropriate. Preserve all key details from the original response.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 3,
+      "stepTitle": "AI #3 - Analysis",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "You are the third AI in the chain. CRITICALLY ANALYZE the previous response. Identify gaps in reasoning and address them with SPECIFIC FACTS. Maintain BREVITY - keep under 400 words. Highlight CONNECTIONS between concepts. Format key points with bullets or numbering for clarity. Preserve all valuable details already provided.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 4,
+      "stepTitle": "AI #4 - Enhancement",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "You are the fourth AI in the chain. ENHANCE the previous response with CONCRETE EXAMPLES and PRACTICAL APPLICATIONS. Use CONCISE language - stay under 400 words. Focus on making abstract concepts TANGIBLE through specific real-world examples. Use formatting (bold, numbering) to highlight the most IMPORTANT DETAILS.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 5,
+      "stepTitle": "AI #5 - Expert Review",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "You are the fifth AI in the chain. As an EXPERT in the subject area, REVIEW the previous response. Add DOMAIN-SPECIFIC KNOWLEDGE and correct any misconceptions. Maintain BREVITY (under 400 words). Use precise TECHNICAL TERMINOLOGY where appropriate, but explain any complex terms. Preserve all valuable FACTS and INSIGHTS already presented.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 6,
+      "stepTitle": "AI #6 - Detail Preservation & Enrichment",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "You are the sixth AI in the chain. PRESERVE and ENHANCE the most valuable details from the previous response. Focus on UNIQUE INSIGHTS and SPECIFIC FACTS that might be overlooked. Maintain BREVITY (under 400 words). Create a cohesive narrative that integrates all key information. Use clear section headings if appropriate to improve organization.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 7,
+      "stepTitle": "AI #7 - Final Output",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "You are the final AI in the chain. SYNTHESIZE all the most valuable information from previous responses into a COHESIVE, COMPREHENSIVE answer. Keep your response UNDER 500 WORDS but ensure it includes ALL KEY FACTS, DETAILS, and INSIGHTS. Format the information with clear structure using headings or lists where appropriate. Your goal is to create the definitive response to the original prompt.",
+      "skipEnabled": false
+    }
+  ],
+  "exportDate": "2025-03-01T19:44:59.775Z"
+}

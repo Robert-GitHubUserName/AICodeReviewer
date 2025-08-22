@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>No Agent Conversation</title>
+  <link rel="stylesheet" href="../build/clippy.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    .navbar-custom {
+      background-color: rgba(0, 0, 0, 0.8); /* Dark background with opacity */
+      border-radius: 2rem; /* Increase rounded corners */
+    }
+  </style>
+</head>
+<body>
+  <div class="content-wrapper">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom rounded">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="../index.html"><i class="fas fa-home"></i> Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="ai-multi-reply.html">Multi-AI Reply</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="ai-multi-conversation.html">Multi-AI Conversation</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="ai-multi-no-agent-conv.html"><i class="fas fa-flask"></i> AI Only Conversation</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="ai-multi-chain.html"><i class="fas fa-link"></i> AI Chain Processing</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="toggleSettingsForm()"><i class="fas fa-cog"></i> Settings</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h1>AI Only Conversation</h1>
+      <!-- Settings form with updated styles -->
+      <div id="settingsForm" class="settings-form" style="display: none; position: absolute; top: 100px; right: 20px;">
+        <h4>Settings</h4>
+        <label for="inputString1">Input String for AI #1:</label>
+        <input type="text" id="inputString1" class="form-control" placeholder="Enter input string for AI #1">
+        <label for="inputString2">Input String for AI #2:</label>
+        <input type="text" id="inputString2" class="form-control" placeholder="Enter input string for AI #2">
+        <button class="btn btn-primary mt-2" onclick="saveSettings()">Save</button>
+      </div>
+      <div class="controls">
+        <label for="apiKeyInput">OpenRouter API Key:</label>
+        <input type="text" id="apiKeyInput" class="form-control" placeholder="Enter API Key">
+        <label for="topicInput">Prompt:</label>
+        <input type="text" id="topicInput" class="form-control" placeholder="Enter a topic to discuss">
+        <label for="engineSelect">#1 AI:</label>
+        <select id="engineSelect" class="form-control"></select>
+        <label for="engineSelect2">#2 AI:</label>
+        <select id="engineSelect2" class="form-control"></select>
+        <button id="startConversationButton" class="btn btn-primary">Start Conversation</button>
+      </div>
+      <div class="conversation-container mt-3">
+        <label for="conversationBox">Conversation:</label>
+        <!-- Busy indicator added below the label -->
+        <div id="busyIndicator" style="display: none;">Processing...</div>
+        <textarea id="conversationBox" class="form-control" readonly style="height:400px;"></textarea>
+        <div class="button-container mt-2">
+          <button onclick="copyToClipboard('conversationBox')" class="btn btn-secondary">Copy Conversation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  <script src="../build/clippy.min.js"></script>
+  <script>
+    // Fetch models and populate the engine select dropdowns
+    function fetchModelsAndPopulateSelect(selectElement) {
+      const apiKey = getCookie('apiKey') || document.getElementById('apiKeyInput').value || 'YOUR_OPENROUTER_API_KEY';
+      fetch('https://openrouter.ai/api/v1/models', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        selectElement.innerHTML = '';
+        const freeModels = data.data.filter(model => model.name.includes("(free)"));
+        const paidModels = data.data.filter(model => !model.name.includes("(free)"));
+        const sortedModels = [...freeModels, ...paidModels];
+        sortedModels.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model.id;
+          option.text = model.name;
+          selectElement.appendChild(option);
+        });
+      })
+      .catch(error => {
+        console.error("Error fetching models from OpenRouter:", error);
+        alert("Error fetching models: " + error.message);
+      });
+    }
+
+    fetchModelsAndPopulateSelect(document.getElementById('engineSelect'));
+    // Populate second dropdown for #2 AI:
+    fetchModelsAndPopulateSelect(document.getElementById('engineSelect2'));
+
+    // Simple action queue for chaining async actions
+    class ActionQueue {
+      constructor() {
+        this.queue = [];
+        this.isRunning = false;
+      }
+      enqueue(action) {
+        this.queue.push(action);
+        this.runNext();
+      }
+      runNext() {
+        if (this.isRunning || this.queue.length === 0) return;
+        this.isRunning = true;
+        const action = this.queue.shift();
+        action(() => {
+          this.isRunning = false;
+          this.runNext();
+        });
+      }
+      clear() {
+        this.queue = [];
+        this.isRunning = false;
+      }
+    }
+
+    const actionQueue = new ActionQueue();
+    let stopConversation = false;
+    let lastResponse = "";
+    let inputString1 = "";
+    let inputString2 = "";
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const apiKeyInput = document.getElementById('apiKeyInput');
+      const savedApiKey = getCookie('apiKey');
+      if (savedApiKey) {
+        apiKeyInput.value = savedApiKey;
+      }
+    });
+
+    document.getElementById('startConversationButton').addEventListener('click', () => {
+      stopConversation = false;
+      const topic = document.getElementById('topicInput').value || "AI";
+      const apiKeyInput = document.getElementById('apiKeyInput').value;
+      const currentApiKey = getCookie('apiKey');
+      if (!currentApiKey || currentApiKey !== apiKeyInput) {
+        setCookie('apiKey', apiKeyInput, 365);
+      }
+      lastResponse = topic;
+      document.getElementById('conversationBox').value = "User: " + topic + "\n";
+      continueConversation();
+    });
+
+    function conversationReply(done) {
+      if (stopConversation) return done();
+      // Show the busy indicator
+      document.getElementById('busyIndicator').style.display = 'block';
+      const prompt = lastResponse;
+      const apiKey = getCookie('apiKey') || document.getElementById('apiKeyInput').value || 'YOUR_OPENROUTER_API_KEY';
+      const engine1 = document.getElementById('engineSelect').value;
+      const engine2 = document.getElementById('engineSelect2').value;
+      Promise.all([
+        fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: engine1,
+            messages: [{ role: 'user', content: prompt + " " + inputString1 }]
+          })
+        }).then(response => response.json()),
+        fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: engine2,
+            messages: [{ role: 'user', content: prompt + " " + inputString2 }]
+          })
+        }).then(response => response.json())
+      ])
+      .then(([data1, data2]) => {
+        // Hide the busy indicator once responses are received
+        document.getElementById('busyIndicator').style.display = 'none';
+        if (data1.error) {
+          throw new Error(data1.error.message);
+        }
+        if (data2.error) {
+          throw new Error(data2.error.message);
+        }
+        const aiResponse1 = data1.choices[0].message.content.trim();
+        const aiResponse2 = data2.choices[0].message.content.trim();
+        // For subsequent conversation, we use AI #1's response
+        lastResponse = aiResponse1;
+        const conversationBox = document.getElementById('conversationBox');
+        conversationBox.value += "AI #1: " + aiResponse1 + "\n" + "AI #2: " + aiResponse2 + "\n";
+        done();
+      })
+      .catch(error => {
+        // Hide the busy indicator on error as well
+        document.getElementById('busyIndicator').style.display = 'none';
+        console.error("Error communicating with OpenRouter:", error);
+        alert("Error: " + error.message);
+        done();
+      });
+    }
+
+    function continueConversation() {
+      if (stopConversation) return;
+      actionQueue.enqueue((done) => {
+        conversationReply(done);
+      });
+      actionQueue.enqueue((done) => {
+        setTimeout(done, 2000);
+      });
+      actionQueue.enqueue((done) => {
+        if (stopConversation) return done();
+        if (confirm("Do you want to continue the conversation?")) {
+          continueConversation();
+        } else {
+          stopConversation = true;
+        }
+        done();
+      });
+    }
+
+    function copyToClipboard(elementId) {
+      const textarea = document.getElementById(elementId);
+      textarea.select();
+      document.execCommand('copy');
+      alert('Copied to clipboard');
+    }
+
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = "expires=" + d.toUTCString();
+      document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+
+    // Toggle settings form visibility
+    function toggleSettingsForm() {
+      const settingsForm = document.getElementById('settingsForm');
+      if (settingsForm.style.display === 'none') {
+        settingsForm.style.display = 'block';
+      } else {
+        settingsForm.style.display = 'none';
+      }
+    }
+
+    // Save settings from the form
+    function saveSettings() {
+      inputString1 = document.getElementById('inputString1').value;
+      inputString2 = document.getElementById('inputString2').value;
+      alert('Settings saved');
+      toggleSettingsForm();
+    }
+  </script>
+</body>
+</html>

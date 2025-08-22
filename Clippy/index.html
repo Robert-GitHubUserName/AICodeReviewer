@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RobertTips.com</title>
+  <!-- Include clippy CSS first so other styles can override if needed -->
+  <link rel="stylesheet" href="build/clippy.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="src/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+  <style>
+    /* Make sure these styles don't interfere with the clippy balloon */
+    .agent-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 900; /* Lower than clippy z-index */
+    }
+    .agent-container > div {
+      pointer-events: auto;
+    }
+    .clippy, .clippy-balloon {
+      z-index: 10000; /* Ensure high z-index */
+    }
+    #startButton {
+      margin: 20px auto;
+      display: block;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .navbar-custom {
+      background-color: rgba(0, 0, 0, 0.8); /* Dark background with opacity */
+      border-radius: 2rem; /* Increase rounded corners */
+    }
+    /* Remove duplicate background layer */
+  </style>
+</head>
+<body>
+  <!-- Wrap all content in the content-wrapper div -->
+  <div class="content-wrapper">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom rounded">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html"><i class="fas fa-home"></i> Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="src/ai-multi-reply.html">Multi-AI Reply</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="src/ai-multi-conversation.html">Multi-AI Conversation</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="src/ai-multi-no-agent-conv.html"><i class="fas fa-flask"></i> AI Only Conversation</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="src/ai-multi-chain.html"><i class="fas fa-link"></i> AI Chain Processing</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    
+    <div class="container" style="position: relative; z-index: 1;">
+      <h1 class="text-center mt-4" style="font-family: 'Russo One', sans-serif;">RobertTips.com</h1>
+      <p class="text-center">Your go-to place for AI tests.</p>
+      <button id="startButton" class="btn btn-primary">Start Agents</button>
+    </div>
+  </div>
+  
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  <script src="build/clippy.min.js"></script>
+  <script>
+    // Set the base path for the agent files
+    clippy.BASE_PATH = 'agents/';
+    
+    // Set up the user interaction required to start everything
+    $(document).ready(function() {
+      console.log("Document ready, setting up click handler");
+      
+      $('#startButton').on('click', function() {
+        // If agents from a previous run exist, hide them
+        if(window.activeAgents) {
+          window.activeAgents.forEach(agent => {
+            if(agent && typeof agent.hide === 'function') {
+              agent.hide();
+            }
+          });
+        }
+        window.activeAgents = [];
+        
+        // Disable the button instead of hiding it
+        $(this).prop('disabled', true)
+               .text('Agents in conversation...')
+               .removeClass('btn-primary')
+               .addClass('btn-secondary');
+
+        console.log("User interaction detected, starting conversation");
+        console.log("Using BASE_PATH:", clippy.BASE_PATH);
+
+        // Calculate center positions based on window size
+        const centerX = Math.max(100, window.innerWidth / 2 - 50);
+        const centerY = Math.max(100, window.innerHeight / 2);
+        
+        // Pre-load all agents at the beginning
+        console.log("Pre-loading all agents...");
+
+        // First load Merlin
+        clippy.load('Merlin', function(merlin) {
+            console.log("Merlin loaded successfully");
+            window.activeAgents.push(merlin);
+            
+            // Next load Genie
+            clippy.load('Genie', function(genie) {
+              console.log("Genie loaded successfully");
+              window.activeAgents.push(genie);
+              
+              // Next load Bonzi
+              clippy.load('Bonzi', function(bonzi) {
+                console.log("Bonzi loaded successfully");
+                window.activeAgents.push(bonzi);
+                
+                // Finally load Clippy (the OG)
+                clippy.load('Clippy', function(clippyAgent) {
+                  console.log("Clippy loaded successfully");
+                  window.activeAgents.push(clippyAgent);
+                  
+                  // Load Peedy
+                  clippy.load('Peedy', function(peedy) {
+                    console.log("Peedy loaded successfully");
+                    window.activeAgents.push(peedy);
+
+                    // Load Genius
+                    clippy.load('Genius', function(genius) {
+                      console.log("Genius loaded successfully");
+                      window.activeAgents.push(genius);
+                      
+                      // Load Rover
+                      clippy.load('Rover', function(rover) {
+                        console.log("Rover loaded successfully");
+                        window.activeAgents.push(rover);
+                        
+                        // Start the conversation sequence using a queue system
+                        function delay(ms) {
+                          return new Promise(resolve => setTimeout(resolve, ms));
+                        }
+
+                        async function runConversation() {
+                          const tasks = [];
+
+                          tasks.push(() => {
+                            merlin.show();
+                            // Merlin positioned closer to center
+                            merlin.moveTo(centerX - 80, centerY - 80);
+                            merlin.play("Wave");
+                            merlin.speak("Welcome to RobertTips.com! We're your AI assistants ready to help with all your projects.");
+                            
+                            // Add follow-up animations for Merlin
+                            setTimeout(() => {
+                              merlin.play("Searching");
+                            }, 2500);
+                            
+                            return delay(5000);
+                          });
+
+                          tasks.push(() => {
+                            genie.show();
+                            // Genie positioned closer to center
+                            genie.moveTo(centerX + 80, centerY - 50);
+                            genie.play("GestureUp");
+                            try {
+                              $(genie._el).draggable();
+                            } catch(e) {
+                              console.error("Could not make Genie draggable:", e);
+                            }
+                            genie.speak("That's right! Our specialized AI tools can transform how you interact with technology. Feel free to explore our features.");
+                            
+                            // Add a different follow-up animation
+                            setTimeout(() => {
+                              genie.play("Show");
+                            }, 3000);
+                            
+                            return delay(5000);
+                          });
+
+                          tasks.push(() => {
+                            merlin.play("GetAttention");
+                            // Add more animations for Merlin after his speech
+                            setTimeout(() => {
+                              merlin.play("MagicTrick");
+                            }, 3000);
+                            
+                            return delay(5000);
+                          });
+
+                          tasks.push(() => {
+                            clippyAgent.show();
+                            // Clippy positioned slightly right of center
+                            clippyAgent.moveTo(centerX + 50, centerY - 200);
+                            try {
+                              $(clippyAgent._el).draggable();
+                            } catch(e) {
+                              console.error("Could not make Clippy draggable:", e);
+                            }
+                            clippyAgent.play("CheckingSomething");
+                            clippyAgent.speak("Clippy at your service! Let's simplify your tasks.");
+                            return delay(5000);
+                          });
+
+                          tasks.push(() => {
+                            peedy.show();
+                            // Peedy centered
+                            peedy.moveTo(centerX, centerY + 50);
+                            peedy.play("GetAttention");
+                            try {
+                              $(peedy._el).draggable();
+                            } catch(e) {
+                              console.error("Could not make Peedy draggable:", e);
+                            }
+                            peedy.speak("Peedy reporting! Let's add some fun to the mix!");
+                            return delay(5000);
+                          });
+
+                          tasks.push(() => {
+                            genius.show();
+                            // Adjusted Genius placement: moved slightly left of center horizontally
+                            genius.moveTo(centerX - 30, centerY + 100);
+                            genius.play("Writing");
+                            try {
+                              $(genius._el).draggable();
+                            } catch(e) {
+                              console.error("Could not make Genius draggable:", e);
+                            }
+                            genius.speak("Genius here, ready to assist with brilliance!");
+                            return delay(5000);
+                          });
+
+                          tasks.push(() => {
+                            rover.show();
+                            // Adjusted Rover placement: moved slightly right of center horizontally
+                            rover.moveTo(centerX + 30, centerY + 150);
+                            rover.play("Alert");
+                            try {
+                              $(rover._el).draggable();
+                            } catch(e) {
+                              console.error("Could not make Rover draggable:", e);
+                            }
+                            rover.speak("Rover on the scene! Let's explore new frontiers together!");
+                            return delay(5000);
+                          });
+
+                        
+                          tasks.push(() => {
+                            // Final wrap-up by Merlin with a flourish
+                            merlin.play("MagicTrick");
+                            merlin.speak("With our team complete, we're ready to help you with all your AI needs!");
+                            return delay(5000);
+                          });
+
+                          // Added: Final spinning animation for Clippy and Genie
+                          tasks.push(() => {
+                            // Make Clippy and Genie process/spin at the end
+                            clippyAgent.play("Processing");
+                            genie.play("Processing");
+                            
+                            // Re-enable the button after a delay
+                            return delay(6500).then(() => {
+                              $('#startButton').prop('disabled', false)
+                                              .text('Start Agents')
+                                              .removeClass('btn-secondary')
+                                              .addClass('btn-primary');
+                              console.log("Conversation complete - button re-enabled");
+                            });
+                          });
+
+                          for (const task of tasks) {
+                            await task();
+                          }
+                        }
+
+                        runConversation().catch(function(error) {
+                          console.error("Conversation error:", error);
+                          $('#startButton').prop('disabled', false)
+                                          .text('Start Agents')
+                                          .removeClass('btn-secondary')
+                                          .addClass('btn-primary');
+                        });
+
+                      }, function(error) {
+                        console.error("Failed to load Rover:", error);
+                        handleError();
+                      });
+
+                    }, function(error) {
+                      console.error("Failed to load Genius:", error);
+                      handleError();
+                    });
+
+                  }, function(error) {
+                    console.error("Failed to load Peedy:", error);
+                    handleError();
+                  });
+                }, function(error) {
+                  console.error("Failed to load Clippy:", error);
+                  handleError();
+                });
+              }, function(error) {
+                console.error("Failed to load Bonzi:", error);
+                handleError();
+              });
+            }, function(error) {
+              console.error("Failed to load Genie:", error);
+              handleError();
+            });
+        }, function(error) {
+          console.error("Failed to load Merlin:", error);
+          handleError();
+        });
+        
+        // Error handler function
+        function handleError() {
+          $('#startButton').prop('disabled', false)
+                          .text('Start Agents')
+                          .removeClass('btn-secondary')
+                          .addClass('btn-primary');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

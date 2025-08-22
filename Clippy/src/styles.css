@@ -1,0 +1,169 @@
+body {
+  background-color: #121212; /* Dark background */
+  color: #e0e0e0; /* Light text color for better contrast */
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0; /* Remove padding to ensure full coverage */
+  min-height: 100vh; /* Ensure minimum height is full viewport height */
+  background-image: url('../src/images-site/background.webp'), url('../src/images/fallback.jpg'); /* Add background image with fallback */
+  background-size: cover; /* Cover the entire background */
+  background-position: center center; /* Center the background image */
+  background-repeat: no-repeat; /* Prevent repeating */
+  background-attachment: fixed; /* Keep background fixed during scroll */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  display: flex;
+  flex-direction: column;
+}
+
+html {
+  height: 100%; /* Ensure html element takes full height */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Add content padding instead of body padding */
+.content-wrapper {
+  padding: 20px;
+  flex: 1;
+  width: 100%;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+h1, p {
+  text-align: center;
+}
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.controls label {
+  font-weight: bold;
+}
+.controls input, .controls select, .controls button {
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  padding: 10px;
+  border-radius: 4px;
+}
+.controls input::placeholder {
+  color: #888;
+}
+.agent {
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+.errorLabel {
+  margin-top: 10px;
+  color: #ff6b6b; /* Light red color for error text */
+}
+.replyBox {
+  margin-top: 10px;
+  border: 1px solid #444;
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  padding: 10px;
+  width: 100%;
+  height: 100px;
+  overflow-y: auto;
+  border-radius: 4px;
+}
+.agent-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.agent-controls button {
+  margin-top: 10px;
+}
+.agent-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.agent-select-container label {
+  font-weight: bold;
+}
+.agent-select-container select {
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  padding: 10px;
+  border-radius: 4px;
+}
+.button-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.button-container button {
+  flex: 1;
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.agent-select-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-pills .nav-link {
+  color: #fff;
+}
+.nav-pills .nav-link.active {
+  background-color: #007bff;
+}
+.settings-form {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid #444;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  color: #e0e0e0;
+}
+.settings-form h4 {
+  margin-top: 0;
+}
+.settings-form label {
+  font-weight: bold;
+}
+.settings-form input {
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+.settings-form button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}

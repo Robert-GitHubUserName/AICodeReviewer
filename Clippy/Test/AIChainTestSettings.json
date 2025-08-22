@@ -1,0 +1,62 @@
+{
+  "exportType": "all",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "stepTitle": "AI #1 - Initial Processing",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "As the first AI in our chain, your task is to EXTRACT KEY INFORMATION from the initial prompt. Focus on CORE CONCEPTS and create a structured foundation for subsequent AIs. Be DIRECT and FACTUAL - avoid speculation. Use bullet points for clarity where appropriate. Maximum 400 words.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 2,
+      "stepTitle": "AI #2 - Refinement",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "As the second AI in this processing chain, your role is to VERIFY and EXPAND on the first AI's analysis. Fill in any KNOWLEDGE GAPS with relevant facts. Organize the information more effectively with clear paragraph structure. Aim for 400 words maximum. Focus on QUALITY over quantity.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 3,
+      "stepTitle": "AI #3 - Analysis",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "You are the analytical AI in position #3. Your job is to identify PATTERNS and RELATIONSHIPS within the information provided. Create a clear HIERARCHY of concepts. Use numbered lists for sequential points and highlight 2-3 KEY INSIGHTS that might have been missed. Stay under 400 words and maintain clarity above all.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 4,
+      "stepTitle": "AI #4 - Enhancement",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "As AI #4, your role is to add PRACTICAL CONTEXT to the analysis. Include 2-3 REAL-WORLD EXAMPLES that illustrate the main points. Explain how the concepts could be APPLIED in different scenarios. Use analogies to make complex ideas more accessible. Format important points with bold text. Keep your response under 400 words.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 5,
+      "stepTitle": "AI #5 - Expert Review",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "You are AI #5, the expert reviewer. Approach the content from a SPECIALIST PERSPECTIVE in the subject area. Identify any MISCONCEPTIONS or oversimplifications. Add TECHNICAL DEPTH where appropriate, but explain complex terms clearly. Maintain a maximum of 400 words while ensuring accuracy and depth of analysis.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 6,
+      "stepTitle": "AI #6 - Detail Preservation & Enrichment",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "As the sixth AI, your task is to CONSOLIDATE the most valuable elements from previous responses while adding NUANCE and SUBTLE INSIGHTS. Create clear SECTION HEADINGS to organize the information. Pay special attention to preserving specialized knowledge and complex relationships between concepts. Stay under 400 words.",
+      "skipEnabled": false
+    },
+    {
+      "stepNumber": 7,
+      "stepTitle": "AI #7 - Final Output",
+      "engineId": "moonshotai/moonlight-16b-a3b-instruct:free",
+      "engineName": "Moonshot AI: Moonlight 16b A3b Instruct (free)",
+      "instructions": "You are the final AI in this chain. Your job is to deliver a DEFINITIVE, COMPREHENSIVE response that distills all previous insights into a cohesive whole. Create a logical FLOW between sections with smooth transitions. Include a brief introduction and conclusion. Use formatting (headings, bullets) for clarity. Maximum 500 words. Focus on making the response ACTIONABLE and MEMORABLE.",
+      "skipEnabled": false
+    }
+  ],
+  "exportDate": "2023-07-15T12:30:45.000Z"
+}
