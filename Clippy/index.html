@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RobertTips.com</title>
   <!-- Include clippy CSS first so other styles can override if needed -->
   <link rel="stylesheet" href="build/clippy.css">
@@ -41,6 +42,14 @@
       background-color: rgba(0, 0, 0, 0.8); /* Dark background with opacity */
       border-radius: 2rem; /* Increase rounded corners */
     }
+    /* Container positioning styles */
+    .main-container {
+      position: relative;
+      z-index: 1;
+    }
+    .main-title {
+      font-family: 'Russo One', sans-serif;
+    }
     /* Remove duplicate background layer */
   </style>
 </head>
@@ -72,8 +81,8 @@
       </div>
     </nav>
     
-    <div class="container" style="position: relative; z-index: 1;">
-      <h1 class="text-center mt-4" style="font-family: 'Russo One', sans-serif;">RobertTips.com</h1>
+    <div class="container main-container">
+      <h1 class="text-center mt-4 main-title">RobertTips.com</h1>
       <p class="text-center">Your go-to place for AI tests.</p>
       <button id="startButton" class="btn btn-primary">Start Agents</button>
     </div>
