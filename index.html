@@ -84,6 +84,9 @@
             canvas.style('z-index', '-1'); // Put canvas behind other content
             noStroke(); // Remove stroke from shapes for a smoother look
 
+            // Set color mode to HSB (Hue, Saturation, Brightness) for proper orange colors
+            colorMode(HSB, 360, 100, 100, 255);
+
             // Initialize particles array
             particles = [];
         }
