@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitLab Merge Request Code Reviewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="background-animation"></div>
     <div class="container">
         <header>
             <h1>GitLab Merge Request Code Reviewer</h1>
@@ -66,5 +66,95 @@
     </div>
 
     <script src="script.js"></script>
+
+    <script>
+        // Global variables for p5.js wave animation
+        let canvasWidth;
+        let canvasHeight;
+        let particles = []; // Array to hold floating particles
+
+        function setup() {
+            // Initialize variables inside setup()
+            canvasWidth = windowWidth;
+            canvasHeight = windowHeight;
+
+            // Create canvas that covers the entire viewport
+            let canvas = createCanvas(canvasWidth, canvasHeight);
+            canvas.position(0, 0);
+            canvas.style('z-index', '-1'); // Put canvas behind other content
+            noStroke(); // Remove stroke from shapes for a smoother look
+
+            // Initialize particles array
+            particles = [];
+        }
+
+        function draw() {
+            // Clear background with transparent to avoid covering content
+            clear();
+
+            let numberOfCircles = 140; // Increased for denser waves
+            let spacing = width / numberOfCircles;
+
+            // Draw multiple wave layers for depth
+            for (let layer = 0; layer < 3; layer++) {
+                let layerOffset = layer * 50;
+                let layerSpeed = 0.01 + layer * 0.005;
+                let layerAmplitude = 120 - layer * 20;
+
+                for (let i = 0; i < numberOfCircles; i++) {
+                    let xPosition = i * spacing;
+
+                    // Calculate y position with multiple sine waves for organic movement
+                    let yPosition = height / 2 + layerOffset +
+                        sin(frameCount * layerSpeed + i * 0.08) * layerAmplitude +
+                        sin(frameCount * 0.02 + i * 0.15) * (layerAmplitude * 0.5);
+
+                    // Dynamic orange color variations
+                    let baseHue = 25 + layer * 5; // Base orange hue
+                    let orangeHue = baseHue + sin(frameCount * 0.03 + i * 0.1) * 15;
+                    let saturation = 75 + sin(frameCount * 0.015 + i * 0.12 + layer) * 25;
+                    let lightness = 45 + sin(frameCount * 0.02 + i * 0.08) * 15;
+                    let alpha = 180 - layer * 40; // Fade layers back
+
+                    fill(orangeHue, saturation, lightness, alpha);
+
+                    // Vary circle size based on layer and position
+                    let circleSize = 20 - layer * 5 + sin(frameCount * 0.01 + i * 0.2) * 8;
+                    ellipse(xPosition, yPosition, circleSize, circleSize);
+                }
+            }
+
+            // Add some floating particles for extra visual interest
+            if (frameCount % 10 === 0) { // Add new particles occasionally
+                particles.push({
+                    x: random(width),
+                    y: random(height),
+                    size: random(3, 8),
+                    speed: random(0.5, 2),
+                    hue: random(20, 45)
+                });
+            }
+
+            // Update and draw particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.y -= p.speed;
+                fill(p.hue, 70, 60, 100);
+                ellipse(p.x, p.y, p.size, p.size);
+
+                // Remove particles that go off screen
+                if (p.y < -10) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function windowResized() {
+            // Update canvas size when window is resized
+            canvasWidth = windowWidth;
+            canvasHeight = windowHeight;
+            resizeCanvas(canvasWidth, canvasHeight);
+        }
+    </script>
 </body>
 </html>
